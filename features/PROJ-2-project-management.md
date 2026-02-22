@@ -47,7 +47,76 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponentenstruktur
+
+```
+/projects (geschützte Seite – Redirect zu /login wenn nicht eingeloggt)
++-- ProjectsPage
+    +-- PageHeader
+    |   +-- Titel "Meine Projekte"
+    |   +-- "Neues Projekt" Button
+    +-- ProjectsGrid
+    |   +-- ProjectCard (wiederholt für jedes Projekt)
+    |       +-- Color Badge (farbiger Kreis)
+    |       +-- Projektname (gekürzt bei Überlauf)
+    |       +-- Total Tracked Time ("12h 30m")
+    |       +-- Edit Button (Stift-Icon)
+    |       +-- Delete Button (Mülleimer-Icon)
+    +-- EmptyState ("Erstelle dein erstes Projekt")
+    +-- CreateEditProjectModal  ← Dialog (shadcn/ui)
+    |   +-- Projektname Eingabefeld
+    |   +-- ColorPicker (8 vordefinierte Farbfelder)
+    |   +-- Speichern / Abbrechen Buttons
+    +-- DeleteConfirmDialog  ← AlertDialog (shadcn/ui)
+        +-- "Projekt [Name] wirklich löschen?"
+        +-- Löschen bestätigen / Abbrechen
+```
+
+### Datenmodell
+
+**Tabelle: `projects`** (Supabase PostgreSQL)
+
+| Feld | Typ | Beschreibung |
+|---|---|---|
+| `id` | UUID (PK) | Automatisch generiert |
+| `user_id` | UUID (FK → auth.users) | Verknüpft mit dem eingeloggten Nutzer |
+| `name` | Text (1–50 Zeichen) | Projektname |
+| `color` | Text (Hex-Farbcode) | Einer von 8 vordefinierten Farben |
+| `created_at` | Timestamp | Automatisch gesetzt |
+
+Beziehungen:
+- Ein Nutzer hat viele Projekte
+- Ein Projekt hat viele Tasks (PROJ-3) und Zeiteinträge (PROJ-4)
+- Beim Löschen: Tasks + Zeiteinträge werden per CASCADE mitgelöscht
+- "Total Tracked Time" wird aus Zeiteinträgen aggregiert (PROJ-4); Platzhalter "0h" bis dahin
+
+### Tech-Entscheidungen
+
+| Entscheidung | Begründung |
+|---|---|
+| Supabase-Datenbank (kein localStorage) | Projektdaten müssen persistieren und geräteübergreifend verfügbar sein |
+| Direkte Supabase-Client-Aufrufe | Für einfaches CRUD ausreichend – kein eigener API-Server nötig |
+| Row Level Security (RLS) | Nutzer sehen/bearbeiten nur ihre eigenen Projekte – Sicherheit auf DB-Ebene |
+| Dialog + AlertDialog (bereits installiert) | Modal (Create/Edit) und Bestätigungsdialog ohne neue Abhängigkeiten |
+| react-hook-form + Zod (bereits vorhanden) | Konsistente Formularvalidierung, wiederverwendet aus PROJ-1 |
+| Optimistisches UI | Projekt erscheint sofort nach Erstellen – bei Netzwerkfehler wird rückgängig gemacht |
+
+### Seitenroute
+
+- **URL:** `/projects`
+- **Schutz:** Middleware aus PROJ-1 leitet zu `/login` weiter wenn nicht eingeloggt
+
+### Sicherheit
+
+- RLS-Richtlinie: `user_id = auth.uid()` für alle Operationen (SELECT, INSERT, UPDATE, DELETE)
+- Case-insensitive Duplikatprüfung auf Datenbankebene
+- Delete-Button wird nach erstem Klick deaktiviert (verhindert doppeltes Löschen)
+
+### Neue Abhängigkeiten
+
+Keine neuen Pakete erforderlich – alle shadcn/ui-Komponenten bereits installiert:
+`Dialog`, `AlertDialog`, `Card`, `Badge`, `Button`, `Input`, `Form`
 
 ## QA Test Results
 _To be added by /qa_
