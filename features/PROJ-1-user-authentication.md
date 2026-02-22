@@ -49,7 +49,91 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponenten-Struktur
+
+```
+App (Root Layout)
++-- Middleware (Schutz aller Routen – unsichtbar für User)
+|
++-- /login (Seite)
+|   +-- AuthCard (Hülle mit Logo/Titel)
+|       +-- LoginForm
+|           +-- Email-Feld (Input + Label)
+|           +-- Passwort-Feld (Input + Label)
+|           +-- Fehler-Hinweis (Alert)
+|           +-- Anmelden-Button (Button, zeigt Ladeindikator)
+|           +-- Links: "Noch kein Konto?" → /register
+|                       "Passwort vergessen?" → /forgot-password
+|
++-- /register (Seite)
+|   +-- AuthCard
+|       +-- RegisterForm
+|           +-- Email-Feld (Input + Label)
+|           +-- Passwort-Feld (Input + Label, min. 8 Zeichen)
+|           +-- Fehler-Hinweis (Alert)
+|           +-- Registrieren-Button (Button, zeigt Ladeindikator)
+|           +-- Link: "Schon ein Konto?" → /login
+|
++-- /forgot-password (Seite)
+|   +-- AuthCard
+|       +-- ForgotPasswordForm
+|           +-- Email-Feld (Input + Label)
+|           +-- Erfolgs-/Fehler-Hinweis (Alert)
+|           +-- Absenden-Button (Button, zeigt Ladeindikator)
+|           +-- Link: "Zurück zum Login" → /login
+|
++-- /dashboard (und alle weiteren App-Seiten)
+    +-- Geschützt durch Middleware → leitet ohne Session zu /login weiter
+```
+
+### Datenmodell
+
+Supabase übernimmt die gesamte Datenverwaltung automatisch. Es wird **keine eigene Datenbanktabelle** für Auth benötigt.
+
+- **Benutzer-Datensatz** (Supabase-verwaltet): UUID, E-Mail, verschlüsseltes Passwort, Registrierungszeitpunkt, letzter Login
+- **Sitzungs-Token** (im Browser): kurzlebiges Zugriffstoken (automatisch erneuert), langlebiges Auffrischungstoken, Ablaufzeit
+
+### Technische Entscheidungen
+
+| Entscheidung | Gewählt | Warum |
+|---|---|---|
+| Auth-Anbieter | Supabase Auth | Bereits im Tech-Stack, verwaltet Tokens, Hashing und E-Mail-Versand |
+| Passwort-Reset | Supabase integrierter E-Mail-Versand | Kein zusätzlicher E-Mail-Dienst nötig |
+| Routen-Schutz | Next.js Middleware | Läuft serverseitig vor dem Rendering – sicherer als clientseitiger Schutz |
+| Token-Speicherung | Supabase SSR-Bibliothek | Verwaltet localStorage und Cookie-Synchronisation automatisch |
+| Nach-Login-Redirect | `window.location.href` | Erzwingt vollständigen Seiten-Reload für korrekten Session-Status |
+| Formular-Validierung | react-hook-form + Zod | Bereits im Tech-Stack; client- und serverseitige Validierung |
+
+### Seitenfluss
+
+```
+Neuer User:    /register → Konto erstellen → /dashboard
+Wiederkehrender User:  /login → Credentials prüfen → /dashboard
+Passwort vergessen:    /forgot-password → Reset-Mail → /login
+Unautorisiert: /dashboard → Middleware → /login?redirect=/dashboard → nach Login zurück
+```
+
+### Neue Dateien
+
+| Datei | Zweck |
+|---|---|
+| `src/middleware.ts` | Schützt alle Routen außer /login, /register, /forgot-password |
+| `src/lib/supabase.ts` | Supabase-Client (Browser + Server) |
+| `src/app/(auth)/login/page.tsx` | Login-Seite |
+| `src/app/(auth)/register/page.tsx` | Registrierungs-Seite |
+| `src/app/(auth)/forgot-password/page.tsx` | Passwort-Reset-Seite |
+| `src/components/auth/login-form.tsx` | Login-Formular |
+| `src/components/auth/register-form.tsx` | Registrierungs-Formular |
+| `src/components/auth/forgot-password-form.tsx` | Passwort-Reset-Formular |
+| `src/hooks/use-auth.ts` | Hook für Session-Status im Client |
+
+### Abhängigkeiten
+
+| Paket | Zweck |
+|---|---|
+| `@supabase/supabase-js` | Supabase-Client |
+| `@supabase/ssr` | SSR + Cookie-Verwaltung für Next.js |
 
 ## QA Test Results
 _To be added by /qa_

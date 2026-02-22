@@ -12,7 +12,7 @@
 
 | ID | Feature | Status | Spec | Created |
 |----|---------|--------|------|---------|
-| PROJ-1 | User Authentication | Planned | [PROJ-1-user-authentication.md](PROJ-1-user-authentication.md) | 2026-02-22 |
+| PROJ-1 | User Authentication | In Progress | [PROJ-1-user-authentication.md](PROJ-1-user-authentication.md) | 2026-02-22 |
 | PROJ-2 | Project Management | Planned | [PROJ-2-project-management.md](PROJ-2-project-management.md) | 2026-02-22 |
 | PROJ-3 | Task Management | Planned | [PROJ-3-task-management.md](PROJ-3-task-management.md) | 2026-02-22 |
 | PROJ-4 | Timer & Time Tracking | Planned | [PROJ-4-timer-time-tracking.md](PROJ-4-timer-time-tracking.md) | 2026-02-22 |
