@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, LogOut } from "lucide-react";
+import { FolderKanban, Loader2, LogOut } from "lucide-react";
 
 export default function DashboardPage() {
   const { user, loading, signOut } = useAuth();
@@ -66,19 +67,33 @@ export default function DashboardPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Dashboard</CardTitle>
-            <CardDescription>
-              Welcome to Time Tracker. Your projects and time entries will appear here.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              No projects yet. Project management is coming in the next update.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Welcome to Time Tracker. Manage your projects and track time.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Link href="/projects" className="block">
+            <Card className="transition-shadow hover:shadow-md">
+              <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <FolderKanban className="h-5 w-5 text-primary" aria-hidden="true" />
+                </div>
+                <div>
+                  <CardTitle className="text-base">Projects</CardTitle>
+                  <CardDescription>Manage your projects</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Create, edit, and organize your projects. Track time for each one.
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
       </main>
     </div>
   );
