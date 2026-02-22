@@ -1,6 +1,6 @@
 # PROJ-1: User Authentication
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-02-22
 **Last Updated:** 2026-02-22
 
@@ -399,4 +399,8 @@ Unautorisiert: /dashboard → Middleware → /login?redirect=/dashboard → nach
 - **Recommendation:** Fix BUG-4 (critical open redirect), BUG-1 (registration feedback), BUG-3 (session expiry redirect), BUG-6 (rate limiting), and BUG-2 (callback error display) before deployment. BUG-5 and BUG-7 can be addressed in the next sprint.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-02-22
+**Production URL:** https://tickr-vert-alpha.vercel.app/
+**Platform:** Vercel (GitHub auto-deploy from `main` branch)
+**Git Tag:** v1.0.0-PROJ-1

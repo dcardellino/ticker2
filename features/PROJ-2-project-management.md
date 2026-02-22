@@ -1,6 +1,6 @@
 # PROJ-2: Project Management
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-02-22
 **Last Updated:** 2026-02-22
 
@@ -485,4 +485,8 @@ supabase/migrations/20260222000001_create_projects_table.sql
 - **Recommendation:** Fix BUG-8 (high -- mobile touch accessibility), BUG-2 (medium -- LIKE wildcard issue), and BUG-5 (medium -- delete auth check) before deployment. BUG-6 and BUG-7 can be addressed in the next sprint. BUG-1, BUG-3, and BUG-4 are low priority nice-to-haves.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-02-22
+**Production URL:** https://tickr-vert-alpha.vercel.app/projects
+**Platform:** Vercel (GitHub auto-deploy from `main` branch)
+**Git Tag:** v1.1.0-PROJ-2
