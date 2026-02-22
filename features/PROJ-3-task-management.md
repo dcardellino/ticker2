@@ -48,7 +48,83 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Komponentenstruktur
+
+```
+/projects/[id]  (neue Seite: Projekt-Detailseite)
++-- Breadcrumb: "Projects → [Projektname]"
++-- Seitenkopf
+|   +-- Projekttitel + Farbe (Badge)
+|   +-- "Add Task" Button
++-- TasksList
+|   +-- TaskCard (wiederholt)
+|   |   +-- Aufgabenname
+|   |   +-- Beschreibung (abgekürzt)
+|   |   +-- Gesamte getrackte Zeit (Platzhalter "0h 0m")
+|   |   +-- Aktionsmenü (Edit / Delete)
+|   +-- Skeleton (Ladezustand)
+|   +-- TasksEmptyState ("Erstelle deine erste Aufgabe")
++-- CreateEditTaskDialog (Modal)
+|   +-- Namensfeld (Pflicht, 1–100 Zeichen)
+|   +-- Beschreibungsfeld (optional, max 500 Zeichen)
+|   +-- Abbrechen / Speichern Buttons
++-- DeleteTaskDialog (Bestätigungs-Dialog)
+    +-- Aufgabenname in der Warnung
+    +-- Abbrechen / Löschen Buttons
+```
+
+### Datenmodell
+
+**Neue Tabelle: `tasks`**
+
+| Feld | Typ | Beschreibung |
+|---|---|---|
+| `id` | UUID (PK) | Automatisch vergeben |
+| `project_id` | UUID (FK → projects) | Verknüpft Aufgabe mit ihrem Projekt |
+| `name` | Text (1–100 Zeichen) | Pflichtfeld, eindeutig pro Projekt |
+| `description` | Text (max 500 Zeichen) | Optional |
+| `created_at` | Timestamp | Wann angelegt (für Sortierung) |
+| `updated_at` | Timestamp | Wann zuletzt geändert |
+
+- RLS-Richtlinie: Nutzer kann nur Aufgaben aus eigenen Projekten lesen/ändern (`projects.user_id = auth.uid()`)
+- Cascade-Delete: Beim Löschen eines Projekts werden alle Aufgaben automatisch mitgelöscht
+
+### Navigation & Seitenstruktur
+
+| Route | Zweck |
+|---|---|
+| `/projects` | Bestehende Projektliste (Klick navigiert zu Detail) |
+| `/projects/[id]` | **NEU:** Projekt-Detail mit Aufgabenliste |
+
+### Technische Entscheidungen
+
+| Entscheidung | Begründung |
+|---|---|
+| Dynamische Route `/projects/[id]` | Passend zur bestehenden Next.js App-Router-Struktur |
+| Supabase-Datenbank (kein localStorage) | Aufgaben müssen mit Timern (PROJ-4) verknüpft werden |
+| Gleiche Muster wie `use-projects.ts` | Konsistenz mit bestehender Codebasis |
+| API-Routen unter `src/app/api/tasks/` | Gleiche Schicht wie Auth-API |
+| Keine neuen Pakete | Alle UI-Bausteine bereits installiert |
+
+### Neue Dateien
+
+```
+src/app/projects/[id]/page.tsx            ← Neue Detailseite
+src/app/api/tasks/route.ts                ← GET (Liste) + POST (Erstellen)
+src/app/api/tasks/[id]/route.ts           ← PUT (Bearbeiten) + DELETE (Löschen)
+src/components/tasks/
+  task-card.tsx
+  tasks-list.tsx
+  tasks-empty-state.tsx
+  create-edit-task-dialog.tsx
+  delete-task-dialog.tsx
+src/hooks/use-tasks.ts
+src/lib/validations/task.ts
+```
+
+### Wiederverwendete shadcn/ui-Komponenten
+Dialog, AlertDialog, Card, Breadcrumb, Textarea, Skeleton, Badge, DropdownMenu
 
 ## QA Test Results
 _To be added by /qa_
