@@ -1,9 +1,10 @@
 # PROJ-3: Task Management
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-02-22
 **Last Updated:** 2026-02-23
 **Bug Fix:** 2026-02-23 — BUG-6 and BUG-7 fixed
+**Deployed:** 2026-02-23
 
 ## Dependencies
 - Requires: PROJ-1 (User Authentication) – tasks are user-scoped
@@ -468,4 +469,18 @@ Direct Supabase browser client (no API routes) – consistent with PROJ-2 patter
 - **Recommendation:** Run `/deploy` to deploy PROJ-3 to production.
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-02-23
+**Commit:** `28d93a2` — feat(PROJ-3): Implement Task Management
+**Git tag:** `v1.3.0-PROJ-3`
+
+### Deployment Notes
+- Migration `supabase/migrations/20260223000001_create_tasks_table.sql` applied to Supabase before deploy
+- No new environment variables required
+- Pushed to `main` branch; Vercel auto-deployed
+
+### Open Issues (non-blocking)
+- BUG-1 (Low): Breadcrumb shows "Projects > [Name]" instead of "Projects > [Name] > Tasks"
+- BUG-2 (Low): Timer check before deletion — deferred to PROJ-4
+- BUG-4 (Low): No rate limiting on task CRUD — acceptable for MVP scale
+- BUG-5 (Low): Missing `stopPropagation` on ProjectCard buttons — preventive fix for future
