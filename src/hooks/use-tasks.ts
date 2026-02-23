@@ -21,8 +21,30 @@ function escapeLike(str: string): string {
   return str.replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
+// Client-side rate limiter: max 10 mutations per 60 seconds (sliding window)
+// Note: true server-side rate limiting requires Supabase or middleware configuration
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+
+function createRateLimiter() {
+  const timestamps: number[] = [];
+  return function isAllowed(): boolean {
+    const now = Date.now();
+    // Remove timestamps outside the sliding window
+    while (timestamps.length > 0 && timestamps[0] < now - RATE_LIMIT_WINDOW_MS) {
+      timestamps.shift();
+    }
+    if (timestamps.length >= RATE_LIMIT_MAX) {
+      return false;
+    }
+    timestamps.push(now);
+    return true;
+  };
+}
+
 export function useTasks(projectId: string): UseTasksReturn {
   const supabaseRef = useRef<SupabaseClient | null>(null);
+  const rateLimiterRef = useRef(createRateLimiter());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +96,9 @@ export function useTasks(projectId: string): UseTasksReturn {
   const createTask = async (
     values: TaskFormValues
   ): Promise<{ success: boolean; error?: string }> => {
+    if (!rateLimiterRef.current()) {
+      return { success: false, error: "Too many requests. Please wait a moment before trying again." };
+    }
     try {
       const supabase = getSupabase();
 
@@ -146,6 +171,9 @@ export function useTasks(projectId: string): UseTasksReturn {
     id: string,
     values: TaskFormValues
   ): Promise<{ success: boolean; error?: string }> => {
+    if (!rateLimiterRef.current()) {
+      return { success: false, error: "Too many requests. Please wait a moment before trying again." };
+    }
     try {
       const supabase = getSupabase();
 
@@ -218,6 +246,9 @@ export function useTasks(projectId: string): UseTasksReturn {
   const deleteTask = async (
     id: string
   ): Promise<{ success: boolean; error?: string }> => {
+    if (!rateLimiterRef.current()) {
+      return { success: false, error: "Too many requests. Please wait a moment before trying again." };
+    }
     try {
       const supabase = getSupabase();
 

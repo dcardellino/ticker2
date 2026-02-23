@@ -54,6 +54,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             className="h-8 w-8"
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               onEdit(project);
             }}
             aria-label={`Edit ${project.name}`}
@@ -66,6 +67,7 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             className="h-8 w-8 text-destructive hover:text-destructive"
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               onDelete(project);
             }}
             aria-label={`Delete ${project.name}`}

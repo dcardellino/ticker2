@@ -226,7 +226,13 @@ export default function ProjectDetailPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{project.name}</BreadcrumbPage>
+              <BreadcrumbLink asChild>
+                <Link href={`/projects/${project.id}`}>{project.name}</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Tasks</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

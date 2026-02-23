@@ -3,7 +3,7 @@
 ## Status: Deployed
 **Created:** 2026-02-22
 **Last Updated:** 2026-02-23
-**Bug Fix:** 2026-02-23 — BUG-6 and BUG-7 fixed
+**Bug Fix:** 2026-02-23 — BUG-6 and BUG-7 fixed; BUG-1, BUG-4, BUG-5 fixed
 **Deployed:** 2026-02-23
 
 ## Dependencies
@@ -386,7 +386,7 @@ Direct Supabase browser client (no API routes) – consistent with PROJ-2 patter
 
 ### Bugs Found
 
-#### BUG-1: Breadcrumb missing "Tasks" segment
+#### BUG-1: Breadcrumb missing "Tasks" segment ✅ FIXED 2026-02-23
 - **Severity:** Low
 - **Steps to Reproduce:**
   1. Go to `/projects`
@@ -394,7 +394,8 @@ Direct Supabase browser client (no API routes) – consistent with PROJ-2 patter
   3. Observe the breadcrumb at the top of the page
   4. Expected: "Projects > [Project Name] > Tasks" (three segments as specified in AC-11)
   5. Actual: "Projects > [Project Name]" (only two segments)
-- **Priority:** Nice to have -- the current breadcrumb is still functional and clear. The third segment "Tasks" is implicit since the page shows only tasks.
+- **Fix:** Added third `BreadcrumbItem` with "Tasks" as `BreadcrumbPage`. Project name now links to `/projects/[id]` (current page) for navigational consistency.
+- **File:** `src/app/projects/[id]/page.tsx`
 
 #### BUG-2: No timer check before task deletion
 - **Severity:** Medium
@@ -416,7 +417,7 @@ Direct Supabase browser client (no API routes) – consistent with PROJ-2 patter
   5. Actual: The UPDATE WITH CHECK policy verifies `projects.user_id = auth.uid()` against the new `project_id`. If User A does not own Project Y, the WITH CHECK fails, so the UPDATE is denied. **On closer review, the existing policy actually protects against this.** The USING clause validates the old row and the WITH CHECK validates the new row. Both must pass.
 - **Result:** Upon further analysis, this is NOT a bug. The UPDATE policy correctly prevents this attack. **Retracted.**
 
-#### BUG-4: No rate limiting on task CRUD operations
+#### BUG-4: No rate limiting on task CRUD operations ✅ FIXED 2026-02-23
 - **Severity:** Low
 - **Steps to Reproduce:**
   1. Authenticate as any user
@@ -424,16 +425,18 @@ Direct Supabase browser client (no API routes) – consistent with PROJ-2 patter
   3. Expected: Rate limiting prevents abuse (e.g., max 10 creates per minute)
   4. Actual: No rate limiting exists. User can create tasks as fast as the API allows.
 - **Impact:** Resource exhaustion on Supabase free tier (500MB DB limit). However, RLS ensures the spam only affects the attacker's own account. The DB CHECK constraints and unique index limit meaningful damage.
-- **Priority:** Nice to have for MVP. Consider implementing Supabase rate limiting or middleware-based throttling before scaling.
+- **Fix:** Client-side sliding window rate limiter added (max 10 mutations per 60 seconds). Returns a user-friendly error message when limit is exceeded. Note: true server-side enforcement requires Supabase or middleware configuration.
+- **File:** `src/hooks/use-tasks.ts`
 
-#### BUG-5: Missing stopPropagation on ProjectCard edit/delete buttons
+#### BUG-5: Missing stopPropagation on ProjectCard edit/delete buttons ✅ FIXED 2026-02-23
 - **Severity:** Low
 - **Steps to Reproduce:**
   1. Go to `/projects`
   2. Click the Edit or Delete button on a project card
   3. Expected: Only the edit/delete action fires
   4. Actual: Currently works due to `preventDefault()`, but the click event still bubbles to the parent Link. This is fragile and may break with future changes.
-- **Priority:** Nice to have -- preventive fix to add `e.stopPropagation()` alongside `e.preventDefault()` for robustness.
+- **Fix:** Added `e.stopPropagation()` alongside `e.preventDefault()` on both Edit and Delete button click handlers.
+- **File:** `src/components/projects/project-card.tsx`
 
 #### BUG-6: Delete dialog closes on error instead of staying open ✅ FIXED 2026-02-23
 - **Severity:** Medium
@@ -462,7 +465,7 @@ Direct Supabase browser client (no API routes) – consistent with PROJ-2 patter
 - **Acceptance Criteria:** 12/13 passed (1 failed: BUG-1 breadcrumb missing "Tasks" segment)
 - **Edge Cases:** 5/6 passed (1 deferred: BUG-2 timer check, pending PROJ-4)
 - **Bugs Found:** 6 total (0 critical, 3 medium, 3 low) -- BUG-3 retracted upon analysis
-- **Bugs Fixed:** BUG-6 and BUG-7 fixed on 2026-02-23
+- **Bugs Fixed:** BUG-1, BUG-4, BUG-5, BUG-6, BUG-7 fixed on 2026-02-23
 - **Security:** PASS - RLS policies are solid, input validation is defense-in-depth, no XSS vectors, security headers configured correctly. Rate limiting is a minor gap.
 - **Build:** PASS - Zero TypeScript errors, zero compilation warnings
 - **Production Ready:** YES (pending deployment) -- BUG-6 and BUG-7 resolved. Remaining open bugs (BUG-1, BUG-4, BUG-5) are low-severity; BUG-2 deferred to PROJ-4.
