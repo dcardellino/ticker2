@@ -1,8 +1,8 @@
 # PROJ-4: Timer & Time Tracking
 
-## Status: Planned
+## Status: In Review
 **Created:** 2026-02-22
-**Last Updated:** 2026-02-22
+**Last Updated:** 2026-02-23
 
 ## Dependencies
 - Requires: PROJ-1 (User Authentication) – time entries are user-scoped
@@ -17,19 +17,19 @@
 - As a user, I want to see the history of all time entries for a task so that I can review past work sessions.
 
 ## Acceptance Criteria
-- [ ] Each task card has a Start/Stop toggle button (play/stop icon from lucide-react)
-- [ ] Clicking "Start" begins a timer for that task and records a start timestamp in the DB
-- [ ] The active timer displays a live HH:MM:SS counter that updates every second
-- [ ] The active task/timer is visually highlighted (e.g., colored border, pulsing indicator, or background change)
-- [ ] Only one timer can be running at a time across all tasks and projects
-- [ ] Starting a timer when another is active automatically stops the previous timer and saves its entry
-- [ ] Clicking "Stop" saves the time entry (start time + end time + calculated duration) to the DB
-- [ ] Each task shows a list of its time entries (start time, end time, duration) below or in an expandable section
-- [ ] Time entries are sorted newest first
-- [ ] If the browser is closed or refreshed while a timer is running, the timer resumes correctly on reload (based on DB start timestamp)
-- [ ] Duration is displayed in HH:MM:SS format in the history list
-- [ ] Total tracked time for each task is updated in real time as the timer runs
-- [ ] Loading state shown while start/stop operations are in progress
+- [x] Each task card has a Start/Stop toggle button (play/stop icon from lucide-react)
+- [x] Clicking "Start" begins a timer for that task and records a start timestamp in the DB
+- [x] The active timer displays a live HH:MM:SS counter that updates every second
+- [x] The active task/timer is visually highlighted (e.g., colored border, pulsing indicator, or background change)
+- [x] Only one timer can be running at a time across all tasks and projects
+- [x] Starting a timer when another is active automatically stops the previous timer and saves its entry
+- [x] Clicking "Stop" saves the time entry (start time + end time + calculated duration) to the DB
+- [x] Each task shows a list of its time entries (start time, end time, duration) below or in an expandable section
+- [x] Time entries are sorted newest first
+- [x] If the browser is closed or refreshed while a timer is running, the timer resumes correctly on reload (based on DB start timestamp)
+- [x] Duration is displayed in HH:MM:SS format in the history list
+- [x] Total tracked time for each task is updated in real time as the timer runs
+- [x] Loading state shown while start/stop operations are in progress
 
 ## Edge Cases
 - User closes the browser tab while a timer is running → on next load, detect the open entry (null end_time) and resume the counter from the saved start_time
@@ -156,7 +156,23 @@ Keine neuen Pakete nötig — alles bereits installiert:
 - shadcn/ui `Collapsible` — aufklappbare Time-Entry-History
 
 ## QA Test Results
-_To be added by /qa_
+
+**Tested:** 2026-02-23 | **Result:** 13/13 AC passed after bug fixes | **Build:** ✓ 0 TypeScript errors
+
+### Bugs Found & Fixed
+
+| # | Severity | Description | Status |
+|---|----------|-------------|--------|
+| BUG-1 | Medium | Stale `total_tracked_time` displayed after timer stop | ✅ Fixed |
+| BUG-2 | Low | No retry button for failed stop operations | ✅ Fixed |
+| BUG-3 | Low | No warning for timers running >24h | ✅ Fixed |
+| BUG-4 | Medium | No real-time sync between multiple browser tabs | ✅ Fixed |
+| BUG-5 | Low | Task card header cramped on 375px mobile screens | ✅ Fixed |
+| BUG-6 | High | No server-side rate limiting on time-entry API endpoints | ✅ Fixed |
+| BUG-7 | Medium | Start endpoint relied solely on RLS for task ownership | ✅ Fixed |
+| BUG-8 | Medium | Unbounded `time_entries` aggregation query (no `.limit()`) | ✅ Fixed |
+| BUG-9 | Low | `TimerProvider` triggered auth check on unauthenticated pages | ✅ Fixed |
+| BUG-10 | Medium | `ActiveTimerBanner` duplicated per-page instead of in root layout | ✅ Fixed |
 
 ## Deployment
 _To be added by /deploy_

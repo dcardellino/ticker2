@@ -75,11 +75,33 @@ export function useTasks(projectId: string): UseTasksReturn {
         return;
       }
 
-      // Map tasks with placeholder total_tracked_time (will be from time_entries in PROJ-4)
+      // Fetch total tracked time for each task from time_entries
+      const taskIds = (data ?? []).map((t) => t.id);
+      let trackedTimeMap: Record<string, number> = {};
+
+      if (taskIds.length > 0) {
+        const { data: timeData } = await supabase
+          .from("time_entries")
+          .select("task_id, duration_seconds")
+          .in("task_id", taskIds)
+          .not("duration_seconds", "is", null)
+          .limit(2000);
+
+        if (timeData) {
+          trackedTimeMap = timeData.reduce<Record<string, number>>(
+            (acc, entry) => {
+              acc[entry.task_id] = (acc[entry.task_id] ?? 0) + (entry.duration_seconds ?? 0);
+              return acc;
+            },
+            {}
+          );
+        }
+      }
+
       setTasks(
         (data ?? []).map((t) => ({
           ...t,
-          total_tracked_time: 0,
+          total_tracked_time: trackedTimeMap[t.id] ?? 0,
         }))
       );
     } catch {

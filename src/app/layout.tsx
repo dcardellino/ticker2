@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
+import { TimerProvider } from "@/contexts/timer-context";
+import { ActiveTimerBanner } from "@/components/timer/active-timer-banner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <TimerProvider>
+          {/* BUG-10 fix: banner lives here so it persists on all pages without flickering */}
+          <ActiveTimerBanner />
+          {children}
+        </TimerProvider>
         <Toaster />
       </body>
     </html>
