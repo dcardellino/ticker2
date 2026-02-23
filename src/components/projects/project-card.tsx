@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -27,6 +28,11 @@ function formatTrackedTime(totalSeconds: number): string {
 export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
   return (
     <Card className="group relative transition-shadow hover:shadow-md">
+      <Link
+        href={`/projects/${project.id}`}
+        className="absolute inset-0 z-0"
+        aria-label={`View tasks for ${project.name}`}
+      />
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div className="flex items-center gap-3 min-w-0">
           <div
@@ -41,12 +47,15 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             {project.name}
           </h3>
         </div>
-        <div className="flex shrink-0 items-center gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+        <div className="relative z-10 flex shrink-0 items-center gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => onEdit(project)}
+            onClick={(e) => {
+              e.preventDefault();
+              onEdit(project);
+            }}
             aria-label={`Edit ${project.name}`}
           >
             <Pencil className="h-4 w-4" />
@@ -55,7 +64,10 @@ export function ProjectCard({ project, onEdit, onDelete }: ProjectCardProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={() => onDelete(project)}
+            onClick={(e) => {
+              e.preventDefault();
+              onDelete(project);
+            }}
             aria-label={`Delete ${project.name}`}
           >
             <Trash2 className="h-4 w-4" />
