@@ -1,6 +1,6 @@
 # PROJ-4: Timer & Time Tracking
 
-## Status: In Review
+## Status: Deployed
 **Created:** 2026-02-22
 **Last Updated:** 2026-02-23
 
@@ -175,4 +175,21 @@ Keine neuen Pakete nötig — alles bereits installiert:
 | BUG-10 | Medium | `ActiveTimerBanner` duplicated per-page instead of in root layout | ✅ Fixed |
 
 ## Deployment
-_To be added by /deploy_
+
+**Deployed:** 2026-02-23
+**Commit:** `feat(PROJ-4): Implement Timer & Time Tracking`
+**Branch:** main
+
+### Files Shipped
+- `src/app/api/time-entries/route.ts` – GET time entries history
+- `src/app/api/time-entries/start/route.ts` – POST start timer
+- `src/app/api/time-entries/stop/route.ts` – POST stop timer
+- `src/contexts/timer-context.tsx` – Global timer state (React Context)
+- `src/hooks/use-timer.ts` – setInterval logic, start/stop actions
+- `src/components/timer/active-timer-banner.tsx` – Persistent banner in root layout
+- `src/components/timer/timer-display.tsx` – HH:MM:SS display
+- `src/components/timer/time-entries-section.tsx` – Collapsible history per task
+- `src/lib/rate-limit.ts` – Server-side rate limiting
+- `src/lib/validations/time-entry.ts` – Zod input validation
+- `supabase/migrations/20260223000002_create_time_entries_table.sql` – DB migration
+- Modified: `src/app/layout.tsx`, `src/components/tasks/task-card.tsx`, `src/hooks/use-tasks.ts`
