@@ -50,7 +50,110 @@
 <!-- Sections below are added by subsequent skills -->
 
 ## Tech Design (Solution Architect)
-_To be added by /architecture_
+
+### Übersicht
+
+Das Feature baut auf dem bestehenden Task-Card-System auf und ergänzt es um einen globalen Timer-Mechanismus. Der Kern der Architektur ist ein **React Context**, der den aktiven Timer-Zustand app-weit verwaltet, damit ein aktiver Timer auch sichtbar bleibt, wenn der Nutzer zwischen Projekten navigiert.
+
+---
+
+### A) Komponentenstruktur
+
+```
+App Layout (Root)
++-- ActiveTimerBanner         ← NEU: persistenter Banner mit laufendem Timer
+|   +-- Live HH:MM:SS Counter
+|   +-- "Stop"-Button
+|   +-- Taskname + Projektname
+|
++-- Projektseite
+    +-- TasksList (bestehend)
+        +-- TaskCard (bestehend – erweitert)
+            +-- [Play/Stop Button]        ← NEU: Toggle-Button (lucide Play/Square)
+            +-- [Pulsierender Indikator]  ← NEU: sichtbar wenn aktiv
+            +-- Tracked Time (bereits vorhanden)
+            +-- TimeEntriesSection        ← NEU: aufklappbar
+                +-- TimeEntryRow (× n)
+                    +-- Startzeit, Endzeit, Dauer
+```
+
+---
+
+### B) Datenmodell
+
+**Neue Tabelle: `time_entries`**
+
+| Feld | Beschreibung |
+|------|-------------|
+| `id` | Eindeutige ID |
+| `task_id` | Zu welchem Task gehört dieser Eintrag |
+| `user_id` | Welchem Nutzer gehört der Eintrag (Sicherheit/RLS) |
+| `started_at` | UTC-Zeitstempel: wann der Timer gestartet wurde |
+| `ended_at` | UTC-Zeitstempel: wann gestoppt — leer wenn Timer noch läuft |
+| `duration_seconds` | Berechnete Dauer in Sekunden (wird beim Stoppen gesetzt) |
+
+Ein offener Eintrag (`ended_at = null`) signalisiert einen laufenden Timer. Beim App-Load wird danach gesucht, um den Timer automatisch fortzusetzen.
+
+---
+
+### C) Globaler Timer-Zustand (React Context)
+
+Ein neuer **`TimerContext`** wird in das App-Layout eingebettet und hält:
+- Welcher Task hat gerade einen laufenden Timer?
+- Wann wurde er gestartet? (für genaue clientseitige Zeitmessung)
+
+Mehrere Komponenten benötigen diesen Zustand gleichzeitig: Task-Card (Hervorhebung), globaler Banner (Navigation), und Start-Logik (um alten Timer automatisch zu stoppen).
+
+---
+
+### D) API-Endpunkte
+
+| Route | Was passiert |
+|-------|-------------|
+| `POST /api/time-entries/start` | Stoppt ggf. offenen Eintrag → erstellt neuen Eintrag mit `started_at` |
+| `POST /api/time-entries/stop` | Setzt `ended_at`, berechnet `duration_seconds` |
+| `GET /api/time-entries?task_id=…` | Lädt die History aller Zeiteinträge für einen Task |
+
+---
+
+### E) Technische Entscheidungen
+
+| Entscheidung | Warum |
+|---|---|
+| **Startzeit in DB, Zählung im Browser** | Bei Browser-Reload bleibt `started_at` erhalten → Timer resumt korrekt: `now - started_at` |
+| **React Context für Timer-State** | Leichtgewichtig, kein Redux nötig. Einzige globale Variable |
+| **Einzel-Timer via API erzwingen** | `/start` stoppt immer zuerst jeden offenen Eintrag — kein zweiter Timer kann offen bleiben |
+| **Supabase Realtime (optional)** | Für Zwei-Tab-Konsistenz: Änderungen in einem Tab aktualisieren den anderen |
+| **Error-Resilience beim Stoppen** | API-Fehler: Timer läuft weiter, Toast mit Retry erscheint — kein Datenverlust |
+
+---
+
+### F) Neue Dateien
+
+| Datei | Zweck |
+|---|---|
+| `src/contexts/timer-context.tsx` | Globaler Timer-State + Provider |
+| `src/hooks/use-timer.ts` | setInterval-Logik, Start/Stop-Aktionen |
+| `src/components/timer/active-timer-banner.tsx` | Persistenter Banner (Layout-Ebene) |
+| `src/components/timer/timer-display.tsx` | HH:MM:SS Anzeige |
+| `src/components/timer/time-entries-section.tsx` | Aufklappbare Eintragsliste pro Task |
+| `src/app/api/time-entries/start/route.ts` | API: Timer starten |
+| `src/app/api/time-entries/stop/route.ts` | API: Timer stoppen |
+| `src/app/api/time-entries/route.ts` | API: History abrufen |
+
+**Bestehende Dateien, die angepasst werden:**
+- `src/components/tasks/task-card.tsx` → Play/Stop Button + Hervorhebung + Time Entries Section
+- App Layout → TimerProvider + ActiveTimerBanner einbinden
+
+---
+
+### G) Abhängigkeiten
+
+Keine neuen Pakete nötig — alles bereits installiert:
+- `lucide-react` — Play + Square Icons
+- `sonner` — Toast für Fehlermeldungen
+- `@supabase/supabase-js` — DB + optional Realtime
+- shadcn/ui `Collapsible` — aufklappbare Time-Entry-History
 
 ## QA Test Results
 _To be added by /qa_
